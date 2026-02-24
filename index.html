@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CompensationPunk — European Tech Compensation Playground</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/htm@3/dist/htm.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root,[data-theme="dark"]{
+  --bg-0:#08090d;--bg-1:#0f1117;--bg-2:#171923;--bg-3:#1e2130;--bg-4:#272b3d;
+  --text-0:#f1f3f8;--text-1:#c4c9db;--text-2:#8b90a5;--text-3:#5c607a;
+  --border:#252840;--border-2:#2f3350;
+  --accent:#6366f1;--accent-h:#818cf8;--accent-m:rgba(99,102,241,.12);
+  --green:#22c55e;--green-m:rgba(34,197,94,.12);
+  --amber:#f59e0b;--amber-m:rgba(245,158,11,.12);
+  --rose:#f43f5e;--rose-m:rgba(244,63,94,.12);
+  --cyan:#06b6d4;--purple:#a855f7;--pink:#ec4899;
+  --radius:8px;--radius-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+  --shadow-lg:0 8px 30px rgba(0,0,0,.5);
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+[data-theme="light"]{
+  --bg-0:#f4f5f9;--bg-1:#ebedf3;--bg-2:#ffffff;--bg-3:#f8f9fc;--bg-4:#eef0f5;
+  --text-0:#111827;--text-1:#374151;--text-2:#6b7280;--text-3:#9ca3af;
+  --border:#e2e4eb;--border-2:#d1d5e0;
+  --accent:#4f46e5;--accent-h:#6366f1;--accent-m:rgba(79,70,229,.08);
+  --green:#16a34a;--green-m:rgba(22,163,74,.08);
+  --amber:#d97706;--amber-m:rgba(217,119,6,.08);
+  --rose:#dc2626;--rose-m:rgba(220,38,38,.08);
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg:0 8px 30px rgba(0,0,0,.08);
+}
+body{font-family:var(--font);background:var(--bg-0);color:var(--text-0);line-height:1.5;min-height:100vh;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh}
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 20px;background:var(--bg-1);border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
+.logo{font-size:15px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.logo-icon{width:22px;height:22px;background:var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:800}
+.header-right{display:flex;align-items:center;gap:6px}
+.hdr-btn{background:var(--bg-3);border:1px solid var(--border);color:var(--text-1);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--font);font-weight:500;transition:all .15s}
+.hdr-btn:hover{background:var(--bg-4);border-color:var(--border-2)}
+.hdr-btn.active{background:var(--accent-m);border-color:var(--accent);color:var(--accent)}
+/* Layout */
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:260px;flex-shrink:0;overflow-y:auto;background:var(--bg-1);border-right:1px solid var(--border);padding:16px}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+.content{flex:1;overflow-y:auto;padding:20px 24px;background:var(--bg-0)}
+.content::-webkit-scrollbar{width:6px}
+.content::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+/* Sidebar filters */
+.filter-section{margin-bottom:20px}
+.filter-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:10px}
+.filter-group{margin-bottom:12px}
+.filter-label{font-size:11px;font-weight:500;color:var(--text-2);margin-bottom:4px;display:block}
+.filter-select{width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text-0);padding:7px 10px;border-radius:6px;font-size:12px;font-family:var(--font);cursor:pointer;outline:none;transition:border-color .15s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236b7280' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.filter-select:focus{border-color:var(--accent)}
+.filter-select option{background:var(--bg-2);color:var(--text-0)}
+/* Presets */
+.preset-btn{width:100%;text-align:left;background:var(--bg-3);border:1px solid var(--border);color:var(--text-1);padding:7px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--font);margin-bottom:4px;transition:all .15s}
+.preset-btn:hover{background:var(--bg-4);border-color:var(--border-2);color:var(--text-0)}
+.preset-btn .preset-name{font-weight:600;color:var(--text-0)}
+.preset-btn .preset-desc{color:var(--text-3);font-size:10px}
+/* Action buttons */
+.action-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--font);transition:all .15s;margin-bottom:6px}
+.action-btn:hover{background:var(--accent-h)}
+.action-btn.secondary{background:var(--bg-3);border:1px solid var(--border);color:var(--text-1)}
+.action-btn.secondary:hover{background:var(--bg-4)}
+/* Tabs */
+.tab-bar{display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{background:none;border:none;color:var(--text-2);padding:8px 14px;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--text-1)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+/* Summary cards */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;position:relative;overflow:hidden}
+.card-label{font-size:11px;font-weight:500;color:var(--text-2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.card-value{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.card-sub{font-size:11px;color:var(--text-3);margin-top:4px;font-variant-numeric:tabular-nums}
+.card-stripe{position:absolute;top:0;left:0;right:0;height:3px}
+/* Charts */
+.chart-container{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px}
+.chart-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text-1)}
+.chart-subtitle{font-size:11px;color:var(--text-3);margin-top:-8px;margin-bottom:12px}
+/* Tables */
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{text-align:left;padding:8px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);border-bottom:1px solid var(--border);background:var(--bg-3)}
+.data-table td{padding:8px 12px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;color:var(--text-1)}
+.data-table tr:hover td{background:var(--bg-3)}
+.data-table tr.highlight td{background:var(--accent-m);font-weight:600;color:var(--text-0)}
+.data-table .num{text-align:right;font-family:'SF Mono',SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px}
+/* Tags/Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+.badge-green{background:var(--green-m);color:var(--green)}
+.badge-amber{background:var(--amber-m);color:var(--amber)}
+.badge-rose{background:var(--rose-m);color:var(--rose)}
+.badge-accent{background:var(--accent-m);color:var(--accent)}
+/* Prompt bar */
+.prompt-bar{background:var(--bg-1);border-top:1px solid var(--border);padding:12px 20px;flex-shrink:0;display:flex;align-items:flex-start;gap:12px}
+.prompt-text{flex:1;font-size:11px;color:var(--text-2);line-height:1.6;font-family:'SF Mono',SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre-wrap;max-height:80px;overflow-y:auto}
+.copy-btn{background:var(--bg-3);border:1px solid var(--border);color:var(--text-1);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;font-family:var(--font);white-space:nowrap;transition:all .15s;flex-shrink:0}
+.copy-btn:hover{background:var(--bg-4);border-color:var(--border-2)}
+.copy-btn.copied{background:var(--green-m);border-color:var(--green);color:var(--green)}
+/* What-if sliders */
+.slider-group{margin-bottom:16px}
+.slider-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.slider-label span:first-child{color:var(--text-1);font-weight:500}
+.slider-label span:last-child{color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
+.slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--bg-4);border-radius:4px;outline:none}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--accent);border-radius:50%;cursor:pointer;border:2px solid var(--bg-2)}
+/* Comparison toggle */
+.toggle-group{display:flex;background:var(--bg-3);border-radius:6px;padding:2px;border:1px solid var(--border);margin-bottom:16px;display:inline-flex}
+.toggle-btn{background:none;border:none;padding:5px 12px;font-size:11px;font-weight:500;color:var(--text-2);cursor:pointer;border-radius:4px;font-family:var(--font);transition:all .15s}
+.toggle-btn.active{background:var(--accent);color:#fff}
+/* Grid layout helpers */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* Responsive */
+@media(max-width:900px){
+  .sidebar{width:220px}
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .grid-2{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .sidebar{display:none}
+  .cards{grid-template-columns:1fr}
+}
+/* Offer input */
+.offer-input{width:100%;background:var(--bg-3);border:1px solid var(--border);color:var(--text-0);padding:7px 10px;border-radius:6px;font-size:12px;font-family:'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;outline:none;font-variant-numeric:tabular-nums}
+.offer-input:focus{border-color:var(--accent)}
+.offer-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.offer-label{font-size:11px;color:var(--text-2);width:60px;flex-shrink:0}
+.percentile-marker{font-size:11px;font-weight:600;padding:2px 6px;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ============================================================
+// DATA LAYER
+// ============================================================
+const html = htm.bind(React.createElement);
+const {useState,useEffect,useRef,useMemo,useCallback,memo} = React;
+
+const GBP_EUR = 1.17;
+
+// Base compensation: London, Big Tech, Senior (L3), P50, GBP thousands
+const ROLES = {
+  'Engineering': {
+    base:105, equity:55, bonus:18,
+    subs:{'Backend Engineer':1.00,'Frontend Engineer':0.95,'Full-Stack Engineer':0.98,'Mobile Engineer':0.97,'DevOps/SRE':1.05,'ML/AI Engineer':1.15,'Security Engineer':1.08,'QA/Test Engineer':0.82,'Embedded Engineer':0.93}
+  },
+  'Product': {
+    base:100, equity:50, bonus:20,
+    subs:{'Product Manager':1.00,'Technical PM':1.05,'Product Analyst':0.85}
+  },
+  'Design': {
+    base:88, equity:40, bonus:14,
+    subs:{'UX Designer':1.00,'UI Designer':0.95,'UX Researcher':0.98,'Design Manager':1.12}
+  },
+  'Data & Analytics': {
+    base:100, equity:50, bonus:17,
+    subs:{'Data Scientist':1.05,'Data Engineer':1.00,'Data Analyst':0.82,'Analytics Engineer':0.95,'BI Analyst':0.78}
+  },
+  'Sales': {
+    base:78, equity:22, bonus:42,
+    subs:{'Account Executive':1.00,'Sales Engineer':1.10,'SDR/BDR':0.65,'Sales Manager':1.20,'VP Sales':1.80}
+  },
+  'Marketing': {
+    base:78, equity:30, bonus:14,
+    subs:{'Growth Marketing':1.00,'Product Marketing':1.05,'Content Marketing':0.85,'Marketing Manager':1.12}
+  },
+  'HR & People': {
+    base:72, equity:25, bonus:12,
+    subs:{'HR Business Partner':1.00,'Recruiter':0.85,'Comp & Benefits':1.05,'People Analytics':0.95}
+  },
+  'Finance': {
+    base:85, equity:32, bonus:18,
+    subs:{'FP&A Analyst':0.90,'Controller':1.05,'Finance Manager':1.10}
+  },
+  'Legal': {
+    base:95, equity:35, bonus:16,
+    subs:{'General Counsel':1.15,'Privacy/DPO':1.00,'Commercial Counsel':0.95}
+  },
+  'Operations & IT': {
+    base:75, equity:25, bonus:12,
+    subs:{'IT Admin':0.80,'IT Manager':1.05,'Program Manager':1.10,'Chief of Staff':1.20}
+  }
+};
+
+const LEVELS = {
+  'L1 Junior':     {base:0.55, equity:0.10, bonus:0.35, short:'Junior'},
+  'L2 Mid':        {base:0.75, equity:0.38, bonus:0.62, short:'Mid'},
+  'L3 Senior':     {base:1.00, equity:1.00, bonus:1.00, short:'Senior'},
+  'L4 Staff/Lead': {base:1.28, equity:1.90, bonus:1.35, short:'Staff'},
+  'L5 Principal/Dir':{base:1.58, equity:3.20, bonus:1.85, short:'Principal'},
+  'L6 VP/Exec':    {base:2.05, equity:5.50, bonus:2.60, short:'VP'}
+};
+
+const TIERS = {
+  'Big Tech':           {base:1.00, equity:1.00, bonus:1.00, desc:'Google, Meta, Microsoft, Amazon, Apple'},
+  'Scale-up':           {base:0.88, equity:0.50, bonus:0.72, desc:'Revolut, Wise, Spotify, Klarna'},
+  'Mid-stage Startup':  {base:0.78, equity:0.25, bonus:0.40, desc:'Series B-D, 50-500 employees'},
+  'Early-stage Startup':{base:0.68, equity:0.10, bonus:0.18, desc:'Seed-Series A, <50 employees'}
+};
+
+const CITIES = {
+  'London':     {country:'UK',      mult:1.00, col:100, cur:'GBP'},
+  'Cambridge':  {country:'UK',      mult:0.92, col:85,  cur:'GBP'},
+  'Edinburgh':  {country:'UK',      mult:0.83, col:76,  cur:'GBP'},
+  'Bristol':    {country:'UK',      mult:0.83, col:78,  cur:'GBP'},
+  'Manchester': {country:'UK',      mult:0.80, col:74,  cur:'GBP'},
+  'Dublin':     {country:'Ireland', mult:0.93, col:89,  cur:'EUR'},
+  'Cork':       {country:'Ireland', mult:0.78, col:75,  cur:'EUR'},
+  'Munich':     {country:'Germany', mult:0.92, col:90,  cur:'EUR'},
+  'Berlin':     {country:'Germany', mult:0.82, col:72,  cur:'EUR'},
+  'Frankfurt':  {country:'Germany', mult:0.85, col:82,  cur:'EUR'},
+  'Hamburg':    {country:'Germany', mult:0.78, col:75,  cur:'EUR'},
+  'Sofia':      {country:'Bulgaria',mult:0.45, col:42,  cur:'EUR'},
+  'Bucharest':  {country:'Romania', mult:0.42, col:40,  cur:'EUR'},
+  'Cluj-Napoca':{country:'Romania', mult:0.40, col:36,  cur:'EUR'}
+};
+
+const PCTS = {P10:0.78, P25:0.88, P50:1.00, P75:1.15, P90:1.35};
+const PCT_KEYS = ['P10','P25','P50','P75','P90'];
+const COUNTRIES = [...new Set(Object.values(CITIES).map(c=>c.country))];
+const CITY_NAMES = Object.keys(CITIES);
+const LEVEL_KEYS = Object.keys(LEVELS);
+const TIER_KEYS = Object.keys(TIERS);
+const CATEGORY_KEYS = Object.keys(ROLES);
+
+const PRESETS = [
+  {name:'Sr Backend, Big Tech, London', cat:'Engineering', sub:'Backend Engineer', lvl:'L3 Senior', tier:'Big Tech', country:'UK', city:'London'},
+  {name:'PM, Scale-up, Dublin', cat:'Product', sub:'Product Manager', lvl:'L3 Senior', tier:'Scale-up', country:'Ireland', city:'Dublin'},
+  {name:'ML Engineer, Big Tech, Munich', cat:'Engineering', sub:'ML/AI Engineer', lvl:'L3 Senior', tier:'Big Tech', country:'Germany', city:'Munich'},
+  {name:'Junior Dev, Startup, Sofia', cat:'Engineering', sub:'Full-Stack Engineer', lvl:'L1 Junior', tier:'Mid-stage Startup', country:'Bulgaria', city:'Sofia'},
+  {name:'VP Eng, Big Tech, London', cat:'Engineering', sub:'Backend Engineer', lvl:'L6 VP/Exec', tier:'Big Tech', country:'UK', city:'London'},
+  {name:'Data Scientist, Scale-up, Berlin', cat:'Data & Analytics', sub:'Data Scientist', lvl:'L3 Senior', tier:'Scale-up', country:'Germany', city:'Berlin'},
+];
+
+// ============================================================
+// COMPUTATION ENGINE
+// ============================================================
+function computeComp(cat, sub, lvl, tier, city, pct='P50') {
+  const r = ROLES[cat]; if(!r) return {base:0,equity:0,bonus:0,total:0};
+  const sm = r.subs[sub] || 1;
+  const lm = LEVELS[lvl] || LEVELS['L3 Senior'];
+  const tm = TIERS[tier] || TIERS['Big Tech'];
+  const cm = CITIES[city] || CITIES['London'];
+  const pm = PCTS[pct] || 1;
+  const base = Math.round(r.base * sm * lm.base * tm.base * cm.mult * pm * 1000);
+  const equity = Math.round(r.equity * sm * lm.equity * tm.equity * cm.mult * pm * 1000);
+  const bonus = Math.round(r.bonus * sm * lm.bonus * tm.bonus * cm.mult * pm * 1000);
+  return {base, equity, bonus, total: base+equity+bonus};
+}
+
+function toDisplayCurrency(amountGBP, displayCur) {
+  return displayCur === 'EUR' ? Math.round(amountGBP * GBP_EUR) : amountGBP;
+}
+function fmt(amount, cur) {
+  const sym = cur === 'EUR' ? '\u20AC' : '\u00A3';
+  if (amount >= 1000000) return sym + (amount/1000000).toFixed(1) + 'M';
+  if (amount >= 1000) return sym + Math.round(amount/1000) + 'k';
+  return sym + amount.toLocaleString();
+}
+function fmtFull(amount, cur) {
+  const sym = cur === 'EUR' ? '\u20AC' : '\u00A3';
+  return sym + amount.toLocaleString();
+}
+
+function chartColors(isDark) {
+  return {
+    text: isDark ? '#8b90a5' : '#6b7280',
+    title: isDark ? '#e8eaf0' : '#111827',
+    line: isDark ? '#252840' : '#e2e4eb',
+    split: isDark ? '#1a1d2e' : '#f0f1f5',
+    tooltipBg: isDark ? '#1e2130' : '#ffffff',
+    tooltipBorder: isDark ? '#2f3350' : '#e2e4eb',
+    tooltipText: isDark ? '#e8eaf0' : '#111827',
+    series: ['#6366f1','#22c55e','#f59e0b','#ec4899','#06b6d4','#a855f7','#f43f5e','#14b8a6']
+  };
+}
+
+// ============================================================
+// ECHART WRAPPER COMPONENT
+// ============================================================
+function EChart({option, height=400}) {
+  const ref = useRef(null);
+  const chart = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    if (!chart.current) {
+      chart.current = echarts.init(ref.current);
+      const ro = new ResizeObserver(() => chart.current && chart.current.resize());
+      ro.observe(ref.current);
+      ref.current._ro = ro;
+    }
+    chart.current.setOption(option, {notMerge:true});
+    return () => {};
+  }, [option]);
+  useEffect(() => {
+    return () => {
+      if (ref.current && ref.current._ro) ref.current._ro.disconnect();
+      if (chart.current) { chart.current.dispose(); chart.current = null; }
+    };
+  }, []);
+  return html`<div ref=${ref} style=${{width:'100%',height:height+'px'}} />`;
+}
+
+// ============================================================
+// TAB: OVERVIEW
+// ============================================================
+function OverviewTab({cat, sub, lvl, tier, city, cur, dark}) {
+  const cc = chartColors(dark);
+  const dispCur = cur;
+  const p50 = computeComp(cat, sub, lvl, tier, city, 'P50');
+  const p25 = computeComp(cat, sub, lvl, tier, city, 'P25');
+  const p75 = computeComp(cat, sub, lvl, tier, city, 'P75');
+  const d = v => toDisplayCurrency(v, dispCur);
+
+  // Box plot data: for each component, [P10, P25, P50, P75, P90]
+  const boxData = ['base','equity','bonus','total'].map(k =>
+    PCT_KEYS.map(p => d(computeComp(cat, sub, lvl, tier, city, p)[k]))
+  );
+  const boxOption = {
+    backgroundColor:'transparent',
+    tooltip:{trigger:'item',backgroundColor:cc.tooltipBg,borderColor:cc.tooltipBorder,textStyle:{color:cc.tooltipText,fontSize:12},
+      formatter:p => {
+        if(!p.data) return '';
+        const labels=['P10','P25','P50','P75','P90'];
+        return `<b>${p.name}</b><br/>`+labels.map((l,i)=>`${l}: ${fmtFull(p.data[i],dispCur)}`).join('<br/>');
+      }
+    },
+    grid:{left:80,right:30,top:20,bottom:40},
+    xAxis:{type:'category',data:['Base','Equity','Bonus','Total'],axisLabel:{color:cc.text,fontSize:11},axisLine:{lineStyle:{color:cc.line}},axisTick:{lineStyle:{color:cc.line}}},
+    yAxis:{type:'value',axisLabel:{color:cc.text,fontSize:10,formatter:v=>fmt(v,dispCur)},splitLine:{lineStyle:{color:cc.split}},axisLine:{show:false}},
+    series:[{type:'boxplot',data:boxData,itemStyle:{color:'rgba(99,102,241,.25)',borderColor:'#6366f1',borderWidth:2},emphasis:{itemStyle:{borderColor:'#818cf8',borderWidth:2.5}}}]
+  };
+
+  // Donut chart
+  const donutOption = {
+    backgroundColor:'transparent',
+    tooltip:{trigger:'item',backgroundColor:cc.tooltipBg,borderColor:cc.tooltipBorder,textStyle:{color:cc.tooltipText,fontSize:12},formatter:p=>`${p.name}: ${fmtFull(d(p.value),dispCur)} (${p.percent}%)`},
+    legend:{bottom:0,textStyle:{color:cc.text,fontSize:11},itemWidth:12,itemHeight:12},
+    series:[{type:'pie',radius:['48%','72%'],center:['50%','45%'],avoidLabelOverlap:true,label:{show:false},
+      data:[
+        {value:p50.base, name:'Base', itemStyle:{color:'#6366f1'}},
+        {value:p50.equity, name:'Equity', itemStyle:{color:'#22c55e'}},
+        {value:p50.bonus, name:'Bonus', itemStyle:{color:'#f59e0b'}}
+      ]
+    }]
+  };
+
+  // Percentile table data
+  const tableData = PCT_KEYS.map(p => {
+    const c = computeComp(cat, sub, lvl, tier, city, p);
+    return {pct:p, base:d(c.base), equity:d(c.equity), bonus:d(c.bonus), total:d(c.total)};
+  });
+
+  const cityData = CITIES[city];
+  const colAdj = Math.round(d(p50.total) * 100 / cityData.col);
+
+  return html`
+    <div class="cards">
+      <div class="card">
+        <div class="card-stripe" style=${{background:'#6366f1'}} />
+        <div class="card-label">Base Salary</div>
+        <div class="card-value" style=${{color:'#6366f1'}}>${fmtFull(d(p50.base),dispCur)}</div>
+        <div class="card-sub">${fmt(d(p25.base),dispCur)} – ${fmt(d(p75.base),dispCur)} P25–P75</div>
+      </div>
+      <div class="card">
+        <div class="card-stripe" style=${{background:'#22c55e'}} />
+        <div class="card-label">Equity (Annual)</div>
+        <div class="card-value" style=${{color:'#22c55e'}}>${fmtFull(d(p50.equity),dispCur)}</div>
+        <div class="card-sub">${fmt(d(p25.equity),dispCur)} – ${fmt(d(p75.equity),dispCur)} P25–P75</div>
+      </div>
+      <div class="card">
+        <div class="card-stripe" style=${{background:'#f59e0b'}} />
+        <div class="card-label">Bonus</div>
+        <div class="card-value" style=${{color:'#f59e0b'}}>${fmtFull(d(p50.bonus),dispCur)}</div>
+        <div class="card-sub">${fmt(d(p25.bonus),dispCur)} – ${fmt(d(p75.bonus),dispCur)} P25–P75</div>
+      </div>
+      <div class="card">
+        <div class="card-stripe" style=${{background:'linear-gradient(90deg,#6366f1,#22c55e,#f59e0b)'}} />
+        <div class="card-label">Total Compensation</div>
+        <div class="card-value">${fmtFull(d(p50.total),dispCur)}</div>
+        <div class="card-sub">${fmt(d(p25.total),dispCur)} – ${fmt(d(p75.total),dispCur)} P25–P75</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="chart-container">
+        <div class="chart-title">Compensation Distribution (P10–P90)</div>
+        <${EChart} option=${boxOption} height=${280} />
+      </div>
+      <div class="chart-container">
+        <div class="chart-title">Compensation Split (P50)</div>
+        <${EChart} option=${donutOption} height=${280} />
+      </div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">Percentile Table</div>
+      <div class="chart-subtitle">CoL Index: ${cityData.col}/100 (London=100) · CoL-Adjusted P50 Total: ${fmtFull(colAdj,dispCur)}</div>
+      <table class="data-table">
+        <thead><tr><th>Percentile</th><th class="num">Base</th><th class="num">Equity</th><th class="num">Bonus</th><th class="num">Total</th></tr></thead>
+        <tbody>
+          ${tableData.map(r => html`
+            <tr class=${r.pct==='P50'?'highlight':''} key=${r.pct}>
+              <td><span class="badge badge-accent">${r.pct}</span></td>
+              <td class="num">${fmtFull(r.base,dispCur)}</td>
+              <td class="num">${fmtFull(r.equity,dispCur)}</td>
+              <td class="num">${fmtFull(r.bonus,dispCur)}</td>
+              <td class="num" style=${{fontWeight:600,color:'var(--text-0)'}}>${fmtFull(r.total,dispCur)}</td>
+            </tr>
+          `)}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ============================================================
+// TAB: CITY COMPARISON
+// ============================================================
+function CityCompareTab({cat, sub, lvl, tier, cur, dark}) {
+  const [colAdjusted, setColAdjusted] = useState(false);
+  const cc = chartColors(dark);
+  const cities = CITY_NAMES;
+  const dispCur = cur;
+
+  const data = useMemo(() => {
+    return cities.map(c => {
+      const p50 = computeComp(cat, sub, lvl, tier, c, 'P50');
+      const cd = CITIES[c];
+      const d = v => toDisplayCurrency(v, dispCur);
+      const factor = colAdjusted ? (100/cd.col) : 1;
+      return {
+        city: c, country: cd.country, col: cd.col,
+        mult: Math.round(cd.mult*100),
+        base: Math.round(d(p50.base)*factor),
+        equity: Math.round(d(p50.equity)*factor),
+        bonus: Math.round(d(p50.bonus)*factor),
+        total: Math.round(d(p50.total)*factor),
+      };
+    }).sort((a,b) => b.total - a.total);
+  }, [cat,sub,lvl,tier,cur,colAdjusted]);
+
+  const londonTotal = data.find(d=>d.city==='London')?.total || 1;
+
+  const barOption = {
+    backgroundColor:'transparent',
+    tooltip:{trigger:'axis',backgroundColor:cc.tooltipBg,borderColor:cc.tooltipBorder,textStyle:{color:cc.tooltipText,fontSize:12},
+      formatter: params => {
+        let s = `<b>${params[0].name}</b><br/>`;
+        let total = 0;
+        params.forEach(p => { s += `${p.marker} ${p.seriesName}: ${fmtFull(p.value,dispCur)}<br/>`; total += p.value; });
+        s += `<b>Total: ${fmtFull(total,dispCur)}</b>`;
+        return s;
+      }
+    },
+    legend:{bottom:0,textStyle:{color:cc.text,fontSize:11},itemWidth:12,itemHeight:12},
+    grid:{left:100,right:30,top:10,bottom:40},
+    yAxis:{type:'category',data:data.map(d=>d.city).reverse(),axisLabel:{color:cc.text,fontSize:11},axisLine:{lineStyle:{color:cc.line}},axisTick:{show:false}},
+    xAxis:{type:'value',axisLabel:{color:cc.text,fontSize:10,formatter:v=>fmt(v,dispCur)},splitLine:{lineStyle:{color:cc.split}},axisLine:{show:false}},
+    series:[
+      {name:'Base',type:'bar',stack:'s',data:data.map(d=>d.base).reverse(),itemStyle:{color:'#6366f1'},barWidth:16},
+      {name:'Equity',type:'bar',stack:'s',data:data.map(d=>d.equity).reverse(),itemStyle:{color:'#22c55e'},barWidth:16},
+      {name:'Bonus',type:'bar',stack:'s',data:data.map(d=>d.bonus).reverse(),itemStyle:{color:'#f59e0b'},barWidth:16},
+    ]
+  };
+
+  return html`
+    <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+      <div class="chart-title" style=${{margin:0}}>${LEVELS[lvl].short} ${sub} · ${tier}</div>
+      <div class="toggle-group">
+        <button class=${'toggle-btn'+(colAdjusted?'':' active')} onClick=${()=>setColAdjusted(false)}>Nominal</button>
+        <button class=${'toggle-btn'+(colAdjusted?' active':'')} onClick=${()=>setColAdjusted(true)}>CoL-Adjusted</button>
+      </div>
+    </div>
+    <div class="chart-container" style=${{padding:'16px 16px 8px'}}>
+      <${EChart} option=${barOption} height=${Math.max(350, data.length*32)} />
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">City Differential Table${colAdjusted?' (CoL-Adjusted)':''}</div>
+      <table class="data-table">
+        <thead><tr><th>City</th><th>Country</th><th class="num">P50 Total</th><th class="num">vs London</th><th class="num">CoL Index</th><th class="num">CoL-Adj Total</th></tr></thead>
+        <tbody>
+          ${data.map(r => {
+            const pctOfLondon = Math.round(r.total / londonTotal * 100);
+            const colAdj = Math.round(r.total * 100 / r.col);
+            const badge = pctOfLondon >= 95 ? 'badge-green' : pctOfLondon >= 75 ? 'badge-amber' : 'badge-rose';
+            return html`<tr key=${r.city} class=${r.city==='London'?'highlight':''}>
+              <td style=${{fontWeight:500}}>${r.city}</td>
+              <td style=${{color:'var(--text-2)'}}>${r.country}</td>
+              <td class="num">${fmtFull(r.total,dispCur)}</td>
+              <td class="num"><span class=${'badge '+badge}>${pctOfLondon}%</span></td>
+              <td class="num">${r.col}</td>
+              <td class="num" style=${{fontWeight:500}}>${fmtFull(colAdjusted ? r.total : colAdj,dispCur)}</td>
+            </tr>`;
+          })}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ============================================================
+// TAB: ROLE COMPARISON
+// ============================================================
+function RoleCompareTab({cat, lvl, tier, city, cur, dark}) {
+  const cc = chartColors(dark);
+  const subs = Object.keys(ROLES[cat].subs);
+  const dispCur = cur;
+
+  const data = useMemo(() => {
+    return subs.map(s => {
+      const p50 = computeComp(cat, s, lvl, tier, city, 'P50');
+      const d = v => toDisplayCurrency(v, dispCur);
+      return {sub: s, base:d(p50.base), equity:d(p50.equity), bonus:d(p50.bonus), total:d(p50.total)};
+    }).sort((a,b) => b.total - a.total);
+  }, [cat, lvl, tier, city, cur]);
+
+  const barOption = {
+    backgroundColor:'transparent',
+    tooltip:{trigger:'axis',backgroundColor:cc.tooltipBg,borderColor:cc.tooltipBorder,textStyle:{color:cc.tooltipText,fontSize:12},
+      formatter: params => {
+        let s = `<b>${params[0].name}</b><br/>`;
+        let total = 0;
+        params.forEach(p => { s += `${p.marker} ${p.seriesName}: ${fmtFull(p.value,dispCur)}<br/>`; total += p.value; });
+        s += `<b>Total: ${fmtFull(total,dispCur)}</b>`;
+        return s;
+      }
+    },
+    legend:{bottom:0,textStyle:{color:cc.text,fontSize:11},itemWidth:12,itemHeight:12},
+    grid:{left:140,right:30,top:10,bottom:40},
+    yAxis:{type:'category',data:data.map(d=>d.sub).reverse(),axisLabel:{color:cc.text,fontSize:11},axisLine:{lineStyle:{color:cc.line}},axisTick:{show:false}},
+    xAxis:{type:'value',axisLabel:{color:cc.text,fontSize:10,formatter:v=>fmt(v,dispCur)},splitLine:{lineStyle:{color:cc.split}},axisLine:{show:false}},
+    series:[
+      {name:'Base',type:'bar',stack:'s',data:data.map(d=>d.base).reverse(),itemStyle:{color:'#6366f1'},barWidth:18},
+      {name:'Equity',type:'bar',stack:'s',data:data.map(d=>d.equity).reverse(),itemStyle:{color:'#22c55e'},barWidth:18},
+      {name:'Bonus',type:'bar',stack:'s',data:data.map(d=>d.bonus).reverse(),itemStyle:{color:'#f59e0b'},barWidth:18},
+    ]
+  };
+
+  // Cross-category comparison
+  const crossData = useMemo(() => {
+    return CATEGORY_KEYS.map(c => {
+      const firstSub = Object.keys(ROLES[c].subs)[0];
+      const p50 = computeComp(c, firstSub, lvl, tier, city, 'P50');
+      const d = v => toDisplayCurrency(v, dispCur);
+      return {cat:c, sub:firstSub, total:d(p50.total)};
+    }).sort((a,b) => b.total - a.total);
+  }, [lvl, tier, city, cur]);
+
+  const crossOption = {
+    backgroundColor:'transparent',
+    tooltip:{trigger:'axis',backgroundColor:cc.tooltipBg,borderColor:cc.tooltipBorder,textStyle:{color:cc.tooltipText,fontSize:12},formatter:p=>p[0]?`<b>${p[0].name}</b><br/>Total: ${fmtFull(p[0].value,dispCur)}`:'' },
+    grid:{left:130,right:30,top:10,bottom:20},
+    yAxis:{type:'category',data:crossData.map(d=>d.cat).reverse(),axisLabel:{color:cc.text,fontSize:11},axisLine:{lineStyle:{color:cc.line}},axisTick:{show:false}},
+    xAxis:{type:'value',axisLabel:{color:cc.text,fontSize:10,formatter:v=>fmt(v,dispCur)},splitLine:{lineStyle:{color:cc.split}},axisLine:{show:false}},
+    series:[{type:'bar',data:crossData.map(d=>d.total).reverse(),itemStyle:{color:'#6366f1'},barWidth:16}]
+  };
+
+  return html`
+    <div class="chart-title">${cat} Roles · ${LEVELS[lvl].short} · ${tier} · ${city}</div>
+    <div class="chart-container" style=${{marginBottom:16}}>
+      <div class="chart-title" style=${{fontSize:12}}>Sub-Role Comparison</div>
+      <${EChart} option=${barOption} height=${Math.max(200, subs.length*36)} />
+    </div>
+    <div class="chart-container">
+      <div class="chart-title" style=${{fontSize:12}}>Cross-Category Comparison (top sub-role per category)</div>
+      <${EChart} option=${crossOption} height=${Math.max(250, CATEGORY_KEYS.length*30)} />
+    </div>
+  `;
+}
+
+// ============================================================
+// TAB: LEVEL PROGRESSION
+// ============================================================
+function ProgressionTab({cat, sub, tier, city, cur, dark}) {
+  const cc = chartColors(dark);
+  const dispCur = cur;
+
+  const data = useMemo(() => {
+    return LEVEL_KEYS.map(l => {
+      const p50 = computeComp(cat, sub, l, tier, city, 'P50');
+      const d = v => toDisplayCurrency(v, dispCur);
+      return {level:LEVELS[l].short, base:d(p50.base), equity:d(p50.equity), bonus:d(p50.bonus), total:d(p50.total)};
+    });
+  }, [cat, sub, tier, city, cur]);
+
+  const barOption = {
+    backgroundColor:'transparent',
+    tooltip:{trigger:'axis',backgroundColor:cc.tooltipBg,borderColor:cc.tooltipBorder,textStyle:{color:cc.tooltipText,fontSize:12},
+      formatter: params => {
+        let s = `<b>${params[0].name}</b><br/>`;
+        let total = 0;
+        params.forEach(p => { s += `${p.marker} ${p.seriesName}: ${fmtFull(p.value,dispCur)}<br/>`; total += p.value; });
+        s += `<b>Total: ${fmtFull(total,dispCur)}</b>`;
+        return s;
+      }
+    },
+    legend:{bottom:0,textStyle:{color:cc.text,fontSize:11},itemWidth:12,itemHeight:12},
+    grid:{left:70,right:30,top:30,bottom:40},
+    xAxis:{type:'category',data:data.map(d=>d.level),axisLabel:{color:cc.text,fontSize:11},axisLine:{lineStyle:{color:cc.line}},axisTick:{show:false}},
+    yAxis:{type:'value',axisLabel:{color:cc.text,fontSize:10,formatter:v=>fmt(v,dispCur)},splitLine:{lineStyle:{color:cc.split}},axisLine:{show:false}},
+    series:[
+      {name:'Base',type:'bar',stack:'s',data:data.map(d=>d.base),itemStyle:{color:'#6366f1'},barWidth:40},
+      {name:'Equity',type:'bar',stack:'s',data:data.map(d=>d.equity),itemStyle:{color:'#22c55e'},barWidth:40},
+      {name:'Bonus',type:'bar',stack:'s',data:data.map(d=>d.bonus),itemStyle:{color:'#f59e0b'},barWidth:40},
+      {name:'Total',type:'line',data:data.map(d=>d.total),lineStyle:{color:'#ec4899',width:2.5},symbol:'circle',symbolSize:8,itemStyle:{color:'#ec4899'},z:10}
+    ]
+  };
+
+  // Growth table
+  const growthData = data.map((d,i) => ({
+    ...d,
+    growth: i > 0 ? Math.round((d.total - data[i-1].total) / data[i-1].total * 100) : null,
+    equityPct: Math.round(d.equity / d.total * 100)
+  }));
+
+  return html`
+    <div class="chart-title">${sub} · ${tier} · ${city}</div>
+    <div class="chart-container" style=${{marginBottom:16}}>
+      <div class="chart-title" style=${{fontSize:12}}>Total Comp by Level</div>
+      <${EChart} option=${barOption} height=${350} />
+    </div>
+    <div class="chart-container">
+      <div class="chart-title" style=${{fontSize:12}}>Level Progression Detail</div>
+      <table class="data-table">
+        <thead><tr><th>Level</th><th class="num">Base</th><th class="num">Equity</th><th class="num">Bonus</th><th class="num">Total</th><th class="num">Growth</th><th class="num">Equity %</th></tr></thead>
+        <tbody>
+          ${growthData.map(r => html`
+            <tr key=${r.level}>
+              <td style=${{fontWeight:600}}>${r.level}</td>
+              <td class="num">${fmtFull(r.base,dispCur)}</td>
+              <td class="num">${fmtFull(r.equity,dispCur)}</td>
+              <td class="num">${fmtFull(r.bonus,dispCur)}</td>
+              <td class="num" style=${{fontWeight:600,color:'var(--text-0)'}}>${fmtFull(r.total,dispCur)}</td>
+              <td class="num">${r.growth !== null ? html`<span class=${'badge '+(r.growth>=40?'badge-green':r.growth>=20?'badge-amber':'badge-accent')}>+${r.growth}%</span>` : '–'}</td>
+              <td class="num" style=${{color:'var(--text-2)'}}>${r.equityPct}%</td>
+            </tr>
+          `)}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ============================================================
+// TAB: WHAT-IF SCENARIOS
+// ============================================================
+function WhatIfTab({cat, sub, lvl, tier, city, cur, dark}) {
+  const cc = chartColors(dark);
+  const dispCur = cur;
+  const [baseAdj, setBaseAdj] = useState(0);
+  const [equityAdj, setEquityAdj] = useState(0);
+  const [bonusAdj, setBonusAdj] = useState(0);
+  const [headcount, setHeadcount] = useState(1);
+  const [offerBase, setOfferBase] = useState('');
+  const [offerEquity, setOfferEquity] = useState('');
+  const [offerBonus, setOfferBonus] = useState('');
+
+  const original = useMemo(() => computeComp(cat, sub, lvl, tier, city, 'P50'), [cat,sub,lvl,tier,city]);
+  const d = v => toDisplayCurrency(v, dispCur);
+
+  const adjusted = useMemo(() => ({
+    base: Math.round(original.base * (1 + baseAdj/100)),
+    equity: Math.round(original.equity * (1 + equityAdj/100)),
+    bonus: Math.round(original.bonus * (1 + bonusAdj/100)),
+  }), [original, baseAdj, equityAdj, bonusAdj]);
+  adjusted.total = adjusted.base + adjusted.equity + adjusted.bonus;
+
+  const delta = adjusted.total - original.total;
+  const deltaPct = ((adjusted.total / original.total - 1) * 100).toFixed(1);
+  const annualImpact = delta * headcount;
+
+  // Before/After chart
+  const compareOption = {
+    backgroundColor:'transparent',
+    tooltip:{trigger:'axis',backgroundColor:cc.tooltipBg,borderColor:cc.tooltipBorder,textStyle:{color:cc.tooltipText,fontSize:12}},
+    legend:{bottom:0,textStyle:{color:cc.text,fontSize:11},itemWidth:12,itemHeight:12},
+    grid:{left:80,right:30,top:20,bottom:40},
+    xAxis:{type:'category',data:['Current','Adjusted'],axisLabel:{color:cc.text,fontSize:12},axisLine:{lineStyle:{color:cc.line}},axisTick:{show:false}},
+    yAxis:{type:'value',axisLabel:{color:cc.text,fontSize:10,formatter:v=>fmt(v,dispCur)},splitLine:{lineStyle:{color:cc.split}},axisLine:{show:false}},
+    series:[
+      {name:'Base',type:'bar',stack:'s',data:[d(original.base),d(adjusted.base)],itemStyle:{color:'#6366f1'},barWidth:50},
+      {name:'Equity',type:'bar',stack:'s',data:[d(original.equity),d(adjusted.equity)],itemStyle:{color:'#22c55e'},barWidth:50},
+      {name:'Bonus',type:'bar',stack:'s',data:[d(original.bonus),d(adjusted.bonus)],itemStyle:{color:'#f59e0b'},barWidth:50},
+    ]
+  };
+
+  // Offer benchmarking
+  const offerPercentiles = useMemo(() => {
+    if (!offerBase && !offerEquity && !offerBonus) return null;
+    const ob = parseFloat(offerBase) || 0;
+    const oe = parseFloat(offerEquity) || 0;
+    const obon = parseFloat(offerBonus) || 0;
+    // Convert offer from display currency to GBP for comparison
+    const toGBP = v => dispCur === 'EUR' ? v / GBP_EUR : v;
+    const obGBP = toGBP(ob * 1000);
+    const oeGBP = toGBP(oe * 1000);
+    const obonGBP = toGBP(obon * 1000);
+    const ototalGBP = obGBP + oeGBP + obonGBP;
+
+    function findPercentile(value, component) {
+      const pctValues = PCT_KEYS.map(p => computeComp(cat, sub, lvl, tier, city, p)[component]);
+      if (value <= pctValues[0]) return 10;
+      if (value >= pctValues[4]) return 90;
+      for (let i = 0; i < 4; i++) {
+        if (value >= pctValues[i] && value <= pctValues[i+1]) {
+          const pctNums = [10,25,50,75,90];
+          const frac = (value - pctValues[i]) / (pctValues[i+1] - pctValues[i]);
+          return Math.round(pctNums[i] + frac * (pctNums[i+1] - pctNums[i]));
+        }
+      }
+      return 50;
+    }
+    return {
+      base: findPercentile(obGBP, 'base'),
+      equity: findPercentile(oeGBP, 'equity'),
+      bonus: findPercentile(obonGBP, 'bonus'),
+      total: findPercentile(ototalGBP, 'total'),
+    };
+  }, [offerBase, offerEquity, offerBonus, cat, sub, lvl, tier, city, cur]);
+
+  function pctColor(p) {
+    if (p >= 70) return 'var(--green)';
+    if (p >= 40) return 'var(--amber)';
+    return 'var(--rose)';
+  }
+
+  return html`
+    <div class="grid-2">
+      <div>
+        <div class="chart-container">
+          <div class="chart-title">Compensation Adjustments</div>
+          <div class="slider-group">
+            <div class="slider-label"><span>Base Salary</span><span>${baseAdj>0?'+':''}${baseAdj}%</span></div>
+            <input type="range" class="slider" min="-30" max="30" step="1" value=${baseAdj} onInput=${e=>setBaseAdj(+e.target.value)} />
+          </div>
+          <div class="slider-group">
+            <div class="slider-label"><span>Equity</span><span>${equityAdj>0?'+':''}${equityAdj}%</span></div>
+            <input type="range" class="slider" min="-50" max="50" step="1" value=${equityAdj} onInput=${e=>setEquityAdj(+e.target.value)} />
+          </div>
+          <div class="slider-group">
+            <div class="slider-label"><span>Bonus</span><span>${bonusAdj>0?'+':''}${bonusAdj}%</span></div>
+            <input type="range" class="slider" min="-30" max="30" step="1" value=${bonusAdj} onInput=${e=>setBonusAdj(+e.target.value)} />
+          </div>
+          <div class="slider-group">
+            <div class="slider-label"><span>Headcount</span><span>${headcount}</span></div>
+            <input type="range" class="slider" min="1" max="100" step="1" value=${headcount} onInput=${e=>setHeadcount(+e.target.value)} />
+          </div>
+          <div style=${{marginTop:16,padding:'12px',background:'var(--bg-3)',borderRadius:'var(--radius)',fontSize:12}}>
+            <div style=${{display:'flex',justifyContent:'space-between',marginBottom:6}}>
+              <span style=${{color:'var(--text-2)'}}>Per-person impact</span>
+              <span style=${{fontWeight:600,color:delta>=0?'var(--green)':'var(--rose)'}}>${delta>=0?'+':''}${fmtFull(d(Math.abs(delta)),dispCur)}/yr (${deltaPct}%)</span>
+            </div>
+            <div style=${{display:'flex',justifyContent:'space-between'}}>
+              <span style=${{color:'var(--text-2)'}}>Total budget impact (${headcount} HC)</span>
+              <span style=${{fontWeight:700,color:delta>=0?'var(--green)':'var(--rose)'}}>${delta>=0?'+':''}${fmtFull(d(Math.abs(annualImpact)),dispCur)}/yr</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">Before / After</div>
+          <${EChart} option=${compareOption} height=${280} />
+        </div>
+      </div>
+      <div>
+        <div class="chart-container">
+          <div class="chart-title">Benchmark My Offer</div>
+          <div class="chart-subtitle">Enter an offer to see where it falls in the market distribution</div>
+          <div class="offer-row">
+            <span class="offer-label">Base (k)</span>
+            <input class="offer-input" type="number" placeholder=${'e.g. '+Math.round(d(original.base)/1000)} value=${offerBase} onInput=${e=>setOfferBase(e.target.value)} />
+          </div>
+          <div class="offer-row">
+            <span class="offer-label">Equity (k)</span>
+            <input class="offer-input" type="number" placeholder=${'e.g. '+Math.round(d(original.equity)/1000)} value=${offerEquity} onInput=${e=>setOfferEquity(e.target.value)} />
+          </div>
+          <div class="offer-row">
+            <span class="offer-label">Bonus (k)</span>
+            <input class="offer-input" type="number" placeholder=${'e.g. '+Math.round(d(original.bonus)/1000)} value=${offerBonus} onInput=${e=>setOfferBonus(e.target.value)} />
+          </div>
+          ${offerPercentiles && html`
+            <div style=${{marginTop:16,padding:'16px',background:'var(--bg-3)',borderRadius:'var(--radius)'}}>
+              <div style=${{fontSize:12,fontWeight:600,marginBottom:12,color:'var(--text-1)'}}>Market Position</div>
+              ${['base','equity','bonus','total'].map(k => html`
+                <div key=${k} style=${{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+                  <span style=${{fontSize:11,color:'var(--text-2)',textTransform:'capitalize',width:50}}>${k}</span>
+                  <div style=${{flex:1,height:6,background:'var(--bg-4)',borderRadius:3,margin:'0 12px',position:'relative'}}>
+                    <div style=${{position:'absolute',left:0,top:0,height:'100%',width:offerPercentiles[k]+'%',background:pctColor(offerPercentiles[k]),borderRadius:3,transition:'width .3s'}} />
+                  </div>
+                  <span class="percentile-marker" style=${{color:pctColor(offerPercentiles[k]),background:offerPercentiles[k]>=70?'var(--green-m)':offerPercentiles[k]>=40?'var(--amber-m)':'var(--rose-m)'}}>P${offerPercentiles[k]}</span>
+                </div>
+              `)}
+            </div>
+          `}
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">Tier Comparison (P50 Total)</div>
+          <table class="data-table">
+            <thead><tr><th>Company Tier</th><th class="num">Total Comp</th><th class="num">vs Big Tech</th></tr></thead>
+            <tbody>
+              ${TIER_KEYS.map(t => {
+                const c = computeComp(cat,sub,lvl,t,city,'P50');
+                const bt = computeComp(cat,sub,lvl,'Big Tech',city,'P50');
+                const pct = Math.round(c.total/bt.total*100);
+                return html`<tr key=${t} class=${t===tier?'highlight':''}>
+                  <td style=${{fontWeight:500}}>${t}</td>
+                  <td class="num">${fmtFull(d(c.total),dispCur)}</td>
+                  <td class="num"><span class=${'badge '+(pct>=90?'badge-green':pct>=70?'badge-amber':'badge-rose')}>${pct}%</span></td>
+                </tr>`;
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// TAB: GEO HEATMAP
+// ============================================================
+function GeoHeatmapTab({cat, sub, lvl, cur, dark}) {
+  const cc = chartColors(dark);
+  const dispCur = cur;
+
+  const data = useMemo(() => {
+    const rows = [];
+    TIER_KEYS.forEach((t, ti) => {
+      CITY_NAMES.forEach((c, ci) => {
+        const p50 = computeComp(cat, sub, lvl, t, c, 'P50');
+        rows.push([ci, ti, toDisplayCurrency(p50.total, dispCur)]);
+      });
+    });
+    return rows;
+  }, [cat, sub, lvl, cur]);
+
+  const maxVal = Math.max(...data.map(d=>d[2]));
+  const minVal = Math.min(...data.map(d=>d[2]));
+
+  const heatmapOption = {
+    backgroundColor:'transparent',
+    tooltip:{backgroundColor:cc.tooltipBg,borderColor:cc.tooltipBorder,textStyle:{color:cc.tooltipText,fontSize:12},
+      formatter:p => `<b>${CITY_NAMES[p.data[0]]}</b><br/>${TIER_KEYS[p.data[1]]}<br/>Total: ${fmtFull(p.data[2],dispCur)}`
+    },
+    grid:{left:140,right:60,top:10,bottom:80},
+    xAxis:{type:'category',data:CITY_NAMES,axisLabel:{color:cc.text,fontSize:10,rotate:45},axisLine:{lineStyle:{color:cc.line}},axisTick:{show:false}},
+    yAxis:{type:'category',data:TIER_KEYS,axisLabel:{color:cc.text,fontSize:10},axisLine:{lineStyle:{color:cc.line}},axisTick:{show:false}},
+    visualMap:{min:minVal,max:maxVal,calculable:true,orient:'vertical',right:0,top:'center',textStyle:{color:cc.text,fontSize:10},
+      inRange:{color:['#1e1b4b','#3730a3','#4f46e5','#6366f1','#818cf8','#a5b4fc']}
+    },
+    series:[{type:'heatmap',data:data,label:{show:true,color:'#fff',fontSize:9,formatter:p=>fmt(p.data[2],dispCur)},
+      emphasis:{itemStyle:{shadowBlur:5,shadowColor:'rgba(0,0,0,.3)'}},
+      itemStyle:{borderColor:dark?'#0f1117':'#ffffff',borderWidth:2}
+    }]
+  };
+
+  return html`
+    <div class="chart-title">${LEVELS[lvl].short} ${sub} · Total Compensation Heatmap</div>
+    <div class="chart-container">
+      <${EChart} option=${heatmapOption} height=${220} />
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">Geo Differential Matrix (% of London, Big Tech)</div>
+      <div style=${{overflowX:'auto'}}>
+        <table class="data-table">
+          <thead><tr><th>City</th>${TIER_KEYS.map(t=>html`<th key=${t} class="num" style=${{fontSize:9}}>${t}</th>`)}</tr></thead>
+          <tbody>
+            ${CITY_NAMES.map(c => {
+              const londonBT = computeComp(cat, sub, lvl, 'Big Tech', 'London', 'P50').total;
+              return html`<tr key=${c}>
+                <td style=${{fontWeight:500,fontSize:11}}>${c}</td>
+                ${TIER_KEYS.map(t => {
+                  const val = computeComp(cat, sub, lvl, t, c, 'P50').total;
+                  const pct = Math.round(val / londonBT * 100);
+                  const bg = pct >= 80 ? 'var(--green-m)' : pct >= 50 ? 'var(--amber-m)' : 'var(--rose-m)';
+                  const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--rose)';
+                  return html`<td key=${t} class="num" style=${{background:bg,color,fontWeight:600,fontSize:11}}>${pct}%</td>`;
+                })}
+              </tr>`;
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+function App() {
+  const [theme, setTheme] = useState('dark');
+  const [cur, setCur] = useState('GBP');
+  const [tab, setTab] = useState('overview');
+  const [cat, setCat] = useState('Engineering');
+  const [sub, setSub] = useState('Backend Engineer');
+  const [lvl, setLvl] = useState('L3 Senior');
+  const [tier, setTier] = useState('Big Tech');
+  const [country, setCountry] = useState('');
+  const [city, setCity] = useState('London');
+  const [copied, setCopied] = useState(false);
+
+  const isDark = theme === 'dark';
+
+  useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
+  useEffect(() => {
+    const subs = Object.keys(ROLES[cat].subs);
+    if (!subs.includes(sub)) setSub(subs[0]);
+  }, [cat]);
+
+  const filteredCities = useMemo(() =>
+    country ? CITY_NAMES.filter(c => CITIES[c].country === country) : CITY_NAMES
+  , [country]);
+  useEffect(() => {
+    if (!filteredCities.includes(city)) setCity(filteredCities[0]);
+  }, [filteredCities]);
+
+  function applyPreset(p) {
+    setCat(p.cat); setSub(p.sub); setLvl(p.lvl); setTier(p.tier);
+    setCountry(p.country); setCity(p.city);
+  }
+
+  function exportCSV() {
+    const rows = [['Category','Sub-Role','Level','Company Tier','City','Country','Currency',
+      'P10 Base','P25 Base','P50 Base','P75 Base','P90 Base',
+      'P10 Equity','P25 Equity','P50 Equity','P75 Equity','P90 Equity',
+      'P10 Bonus','P25 Bonus','P50 Bonus','P75 Bonus','P90 Bonus',
+      'P10 Total','P25 Total','P50 Total','P75 Total','P90 Total'
+    ].join(',')];
+    const d = v => toDisplayCurrency(v, cur);
+    const citiesToExport = filteredCities.length > 0 ? filteredCities : CITY_NAMES;
+    citiesToExport.forEach(c => {
+      const pcts = PCT_KEYS.map(p => computeComp(cat, sub, lvl, tier, c, p));
+      rows.push([cat,sub,lvl,tier,c,CITIES[c].country,cur,
+        ...pcts.map(p=>d(p.base)), ...pcts.map(p=>d(p.equity)),
+        ...pcts.map(p=>d(p.bonus)), ...pcts.map(p=>d(p.total))
+      ].join(','));
+    });
+    const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `comp-${sub.replace(/\s+/g,'-')}-${tier.replace(/\s+/g,'-')}-${lvl.split(' ')[0]}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  // Generate prompt
+  const prompt = useMemo(() => {
+    const d = v => toDisplayCurrency(v, cur);
+    const p50 = computeComp(cat, sub, lvl, tier, city, 'P50');
+    const p25 = computeComp(cat, sub, lvl, tier, city, 'P25');
+    const p75 = computeComp(cat, sub, lvl, tier, city, 'P75');
+    const cd = CITIES[city];
+    const colAdj = fmtFull(Math.round(d(p50.total)*100/cd.col), cur);
+    return `European Tech Compensation Benchmark\n${LEVELS[lvl].short} ${sub} | ${tier} | ${city}, ${cd.country}\n\nTotal Compensation (P25-P75): ${fmtFull(d(p25.total),cur)} \u2013 ${fmtFull(d(p75.total),cur)}\n  Base: ${fmtFull(d(p25.base),cur)} \u2013 ${fmtFull(d(p75.base),cur)}\n  Equity: ${fmtFull(d(p25.equity),cur)} \u2013 ${fmtFull(d(p75.equity),cur)}\n  Bonus: ${fmtFull(d(p25.bonus),cur)} \u2013 ${fmtFull(d(p75.bonus),cur)}\n\nMarket Position: ${Math.round(cd.mult*100)}% of London equivalent\nCoL Index: ${cd.col}/100 (London=100)\nCoL-Adjusted Total: ${colAdj}`;
+  }, [cat, sub, lvl, tier, city, cur]);
+
+  function copyPrompt() {
+    navigator.clipboard.writeText(prompt).then(() => {
+      setCopied(true); setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  const tabs = [
+    {id:'overview', label:'Overview'},
+    {id:'cities', label:'City Benchmark'},
+    {id:'roles', label:'Role Benchmark'},
+    {id:'levels', label:'Level Progression'},
+    {id:'whatif', label:'What-If'},
+    {id:'heatmap', label:'Geo Heatmap'},
+  ];
+
+  return html`
+    <div class="app">
+      <header class="header">
+        <div class="logo">
+          <div class="logo-icon">CP</div>
+          <span>CompensationPunk</span>
+          <span style=${{fontSize:10,color:'var(--text-3)',fontWeight:400,marginLeft:4}}>European Tech Comp</span>
+        </div>
+        <div class="header-right">
+          <button class=${'hdr-btn'+(cur==='GBP'?' active':'')} onClick=${()=>setCur('GBP')}>\u00A3 GBP</button>
+          <button class=${'hdr-btn'+(cur==='EUR'?' active':'')} onClick=${()=>setCur('EUR')}>\u20AC EUR</button>
+          <button class="hdr-btn" onClick=${()=>setTheme(t=>t==='dark'?'light':'dark')} style=${{fontSize:14,padding:'4px 10px'}}>${isDark ? '\u2600' : '\uD83C\uDF19'}</button>
+        </div>
+      </header>
+      <div class="main">
+        <aside class="sidebar">
+          <div class="filter-section">
+            <div class="filter-section-title">Filters</div>
+            <div class="filter-group">
+              <label class="filter-label">Role Category</label>
+              <select class="filter-select" value=${cat} onChange=${e=>{setCat(e.target.value)}}>
+                ${CATEGORY_KEYS.map(c => html`<option key=${c} value=${c}>${c}</option>`)}
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Sub-Role</label>
+              <select class="filter-select" value=${sub} onChange=${e=>setSub(e.target.value)}>
+                ${Object.keys(ROLES[cat].subs).map(s => html`<option key=${s} value=${s}>${s}</option>`)}
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Level</label>
+              <select class="filter-select" value=${lvl} onChange=${e=>setLvl(e.target.value)}>
+                ${LEVEL_KEYS.map(l => html`<option key=${l} value=${l}>${l}</option>`)}
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Company Tier</label>
+              <select class="filter-select" value=${tier} onChange=${e=>setTier(e.target.value)}>
+                ${TIER_KEYS.map(t => html`<option key=${t} value=${t}>${t} \u2014 ${TIERS[t].desc}</option>`)}
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Country</label>
+              <select class="filter-select" value=${country} onChange=${e=>setCountry(e.target.value)}>
+                <option value="">All Countries</option>
+                ${COUNTRIES.map(c => html`<option key=${c} value=${c}>${c}</option>`)}
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">City</label>
+              <select class="filter-select" value=${city} onChange=${e=>setCity(e.target.value)}>
+                ${filteredCities.map(c => html`<option key=${c} value=${c}>${c} (${CITIES[c].country})</option>`)}
+              </select>
+            </div>
+          </div>
+          <div class="filter-section">
+            <div class="filter-section-title">Quick Presets</div>
+            ${PRESETS.map(p => html`
+              <button key=${p.name} class="preset-btn" onClick=${()=>applyPreset(p)}>
+                <div class="preset-name">${p.name}</div>
+              </button>
+            `)}
+          </div>
+          <div class="filter-section">
+            <div class="filter-section-title">Export</div>
+            <button class="action-btn secondary" onClick=${exportCSV}>Export CSV</button>
+          </div>
+        </aside>
+        <main class="content">
+          <div class="tab-bar">
+            ${tabs.map(t => html`
+              <button key=${t.id} class=${'tab-btn'+(tab===t.id?' active':'')} onClick=${()=>setTab(t.id)}>${t.label}</button>
+            `)}
+          </div>
+          ${tab==='overview' && html`<${OverviewTab} cat=${cat} sub=${sub} lvl=${lvl} tier=${tier} city=${city} cur=${cur} dark=${isDark} />`}
+          ${tab==='cities' && html`<${CityCompareTab} cat=${cat} sub=${sub} lvl=${lvl} tier=${tier} cur=${cur} dark=${isDark} />`}
+          ${tab==='roles' && html`<${RoleCompareTab} cat=${cat} lvl=${lvl} tier=${tier} city=${city} cur=${cur} dark=${isDark} />`}
+          ${tab==='levels' && html`<${ProgressionTab} cat=${cat} sub=${sub} tier=${tier} city=${city} cur=${cur} dark=${isDark} />`}
+          ${tab==='whatif' && html`<${WhatIfTab} cat=${cat} sub=${sub} lvl=${lvl} tier=${tier} city=${city} cur=${cur} dark=${isDark} />`}
+          ${tab==='heatmap' && html`<${GeoHeatmapTab} cat=${cat} sub=${sub} lvl=${lvl} cur=${cur} dark=${isDark} />`}
+        </main>
+      </div>
+      <div class="prompt-bar">
+        <div class="prompt-text">${prompt}</div>
+        <button class=${'copy-btn'+(copied?' copied':'')} onClick=${copyPrompt}>${copied ? 'Copied!' : 'Copy'}</button>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${App} />`);
+</script>
+</body>
+</html>
